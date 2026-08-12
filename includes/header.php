@@ -1,64 +1,169 @@
 <?php
-require_once __DIR__.'/../config/config.php';
-require_once __DIR__.'/functions.php';
-$user=$pdo?current_user($pdo):null;
-$active=$active??'';
-$flashes=get_flashes();
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/functions.php';
+$user = $pdo ? current_user($pdo) : null;
+$active = $active ?? '';
+$flashes = get_flashes();
 ?>
+
+
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en">
+<!--begin::Head-->
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?=e($pageTitle??APP_NAME)?></title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="<?=BASE_URL?>/assets/css/style.css" rel="stylesheet">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title><?= e($pageTitle ?? APP_NAME) ?></title>
+
+  <!--begin::Theme Init (prevents flash of incorrect theme on load, #6043)-->
+  <script>
+    (() => {
+      'use strict';
+      const root = document.documentElement;
+
+      // Applications with their own theming opt out of AdminLTE's color mode
+      // entirely, here as well as in the bundle.
+      if (root.getAttribute('data-lte-color-mode') === 'off') {
+        return;
+      }
+
+      const STORAGE_KEY = 'lte-theme';
+      let stored = null;
+      try {
+        stored = localStorage.getItem(STORAGE_KEY);
+      } catch {
+        // localStorage may be unavailable (private mode, sandboxed iframe).
+      }
+      // Mirror the precedence in color-mode.ts: the visitor's stored choice
+      // wins, then a theme this page declared itself, then the OS preference.
+      const authored = root.getAttribute('data-bs-theme');
+      let resolved = 'light';
+      if (stored === 'dark' || stored === 'light') {
+        resolved = stored;
+      } else if (authored === 'dark' || authored === 'light') {
+        resolved = authored;
+      } else if (globalThis.matchMedia('(prefers-color-scheme: dark)').matches) {
+        resolved = 'dark';
+      }
+      root.setAttribute('data-bs-theme', resolved);
+      root.style.colorScheme = resolved;
+      // Flag values computed here, so the bundle does not mistake them for a
+      // theme the page declared and stop following the OS preference.
+      if (resolved !== authored) {
+        root.setAttribute('data-lte-theme-resolved', '');
+      }
+    })();
+  </script>
+  <!--end::Theme Init-->
+
+  <!--begin::Accessibility Meta Tags-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#007bff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
+  <!--end::Accessibility Meta Tags-->
+
+  <!--begin::Primary Meta Tags-->
+  <meta name="title" content="AdminLTE v4 | Dashboard" />
+  <meta name="author" content="ColorlibHQ" />
+  <meta
+    name="description"
+    content="AdminLTE is a free Bootstrap 5 admin dashboard template with almost 50 example pages, built with vanilla JS and designed with accessibility in mind." />
+  <meta
+    name="keywords"
+    content="bootstrap 5, bootstrap, bootstrap 5 admin dashboard, bootstrap 5 dashboard, bootstrap 5 charts, bootstrap 5 calendar, bootstrap 5 datepicker, bootstrap 5 tables, bootstrap 5 datatable, vanilla js datatable, colorlibhq, colorlibhq dashboard, colorlibhq admin dashboard, accessible admin panel" />
+  <!--end::Primary Meta Tags-->
+
+  <!--begin::Accessibility Features-->
+  <!-- Skip links will be dynamically added by accessibility.js -->
+  <meta name="supported-color-schemes" content="light dark" />
+  <link rel="preload" href="<?= BASE_URL ?>/css/adminlte.css" as="style" />
+  <!--end::Accessibility Features-->
+
+  <!--begin::Fonts-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@fontsource/source-sans-3@5.0.12/index.css"
+    integrity="sha256-tXJfXfp6Ewt1ilPzLDtQnJV4hclT9XuaZUKyUvmyr+Q="
+    crossorigin="anonymous"
+    media="print"
+    onload="this.media = 'all'" />
+  <!--end::Fonts-->
+
+  <!--begin::Third Party Plugin(OverlayScrollbars)-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css"
+    crossorigin="anonymous" />
+  <!--end::Third Party Plugin(OverlayScrollbars)-->
+
+  <!--begin::Third Party Plugin(Bootstrap Icons)-->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    crossorigin="anonymous" />
+  <!--end::Third Party Plugin(Bootstrap Icons)-->
+
+  <!--begin::Required Plugin(AdminLTE)-->
+  <link href="<?=BASE_URL?>/assets/css/style.css" rel="stylesheet">
+  <link rel="stylesheet" href="<?= BASE_URL ?>/css/adminlte.css" />
+  <!--end::Required Plugin(AdminLTE)-->
+
+  <!-- apexcharts -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/apexcharts@3.37.1/dist/apexcharts.css"
+    integrity="sha256-4MX+61mt9NVvvuPjUWdUdyfZfxSB1/Rf9WtqRHgG5S0="
+    crossorigin="anonymous" />
+
+  <!-- jsvectormap -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/jsvectormap@1.5.3/dist/css/jsvectormap.min.css"
+    integrity="sha256-+uGLJmmTKOqBr+2E6KDYs/NRsHxSkONXFHUL0fy2O/4="
+    crossorigin="anonymous" />
 </head>
-<body class="<?=e($bodyClass??'')?>">
-<nav class="navbar navbar-expand-lg navbar-dark stare-navbar sticky-top">
- <div class="container-fluid px-3 px-lg-4">
-  <a class="navbar-brand fw-bold" href="<?=BASE_URL?>/index.php"><span class="brand-mark">S</span> STARE</a>
-  <?php if($user): ?>
-  <button class="navbar-toggler" data-bs-toggle="offcanvas" data-bs-target="#sidebar"><span class="navbar-toggler-icon"></span></button>
-  <div class="d-none d-lg-flex align-items-center ms-auto gap-3">
-    <span class="small text-white-50"><?=e($user['name'])?> · <?=e(ucfirst($user['role_name']))?></span>
-    <a class="btn btn-sm btn-outline-light" href="<?=BASE_URL?>/logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
-  </div>
-  <?php endif; ?>
- </div>
-</nav>
-<?php if($user): ?>
-<div class="offcanvas-lg offcanvas-start sidebar" tabindex="-1" id="sidebar">
- <div class="offcanvas-header d-lg-none"><h5 class="offcanvas-title">STARE</h5><button class="btn-close" data-bs-dismiss="offcanvas"></button></div>
- <div class="offcanvas-body p-0">
-  <div class="sidebar-inner">
-   <div class="sidebar-user d-lg-none"><strong><?=e($user['name'])?></strong><span><?=e(ucfirst($user['role_name']))?></span></div>
-   <nav class="nav flex-column gap-1">
-    <?php if(has_permission($pdo,'view_dashboard')): ?><a class="nav-link <?=($active==='dashboard'?'active':'')?>" href="<?=BASE_URL?>/index.php"><i class="bi bi-grid-1x2"></i> Dashboard</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_categories')): ?><a class="nav-link <?=($active==='categories'?'active':'')?>" href="<?=BASE_URL?>/admin/categories/index.php"><i class="bi bi-tags"></i> Categories</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_brands')): ?><a class="nav-link <?=($active==='brands'?'active':'')?>" href="<?=BASE_URL?>/admin/brands/index.php"><i class="bi bi-bookmark-star"></i> Brands</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_products')): ?><a class="nav-link <?=($active==='products'?'active':'')?>" href="<?=BASE_URL?>/admin/products/index.php"><i class="bi bi-box-seam"></i> Products</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_partners')): ?><a class="nav-link <?=($active==='partners'?'active':'')?>" href="<?=BASE_URL?>/admin/partners/index.php"><i class="bi bi-building"></i> Partners</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_clients')): ?><a class="nav-link <?=($active==='clients'?'active':'')?>" href="<?=BASE_URL?>/admin/clients/index.php"><i class="bi bi-people"></i> Clients</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_employees')): ?><a class="nav-link <?=($active==='employees'?'active':'')?>" href="<?=BASE_URL?>/admin/employees/index.php"><i class="bi bi-person-badge"></i> Employees</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_orders')): ?><a class="nav-link <?=($active==='orders'?'active':'')?>" href="<?=BASE_URL?>/admin/orders/index.php"><i class="bi bi-receipt"></i> Orders</a><?php endif; ?>
-    <?php if(has_permission($pdo,'create_orders') && user_role($pdo)!=='client'): ?><a class="nav-link" href="<?=BASE_URL?>/admin/orders/create.php"><i class="bi bi-plus-circle"></i> New Order</a><?php endif; ?>
-    <?php if(has_permission($pdo,'view_reports')): ?><a class="nav-link <?=($active==='reports'?'active':'')?>" href="<?=BASE_URL?>/admin/reports/index.php"><i class="bi bi-bar-chart"></i> Reports</a><?php endif; ?>
-    <?php if(has_permission($pdo,'manage_users')): ?><a class="nav-link <?=($active==='users'?'active':'')?>" href="<?=BASE_URL?>/admin/users/index.php"><i class="bi bi-person-gear"></i> Users</a><?php endif; ?>
-    <?php if(has_permission($pdo,'manage_permissions')): ?><a class="nav-link <?=($active==='permissions'?'active':'')?>" href="<?=BASE_URL?>/admin/permissions/index.php"><i class="bi bi-shield-lock"></i> Permissions</a><?php endif; ?>
-    <?php if(user_role($pdo)==='client'): ?><a class="nav-link <?=($active==='shop'?'active':'')?>" href="<?=BASE_URL?>/client/products.php"><i class="bi bi-shop"></i> Shop</a><?php endif; ?>
-    <?php if(user_role($pdo)==='client'): ?><a class="nav-link <?=($active==='cart'?'active':'')?>" href="<?=BASE_URL?>/client/cart.php"><i class="bi bi-cart3"></i> Cart <span class="badge rounded-pill bg-light text-dark ms-auto"><?=cart_count($pdo,(int)client_id_for_user($pdo,(int)$user['id']))?></span></a><?php endif; ?>
-    <?php if(user_role($pdo)==='client'): ?><a class="nav-link <?=($active==='myorders'?'active':'')?>" href="<?=BASE_URL?>/client/orders.php"><i class="bi bi-bag-check"></i> My Orders</a><?php endif; ?>
-   </nav>
-   <div class="sidebar-bottom d-lg-none"><a href="<?=BASE_URL?>/logout.php" class="btn btn-outline-light w-100">Logout</a></div>
-  </div>
- </div>
-</div>
-<main class="main-content">
- <div class="container-fluid px-3 px-lg-4 py-4">
- <?php foreach($flashes as [$type,$msg]): ?><div class="alert alert-<?=e($type)?> alert-dismissible fade show"><?=e($msg)?><button class="btn-close" data-bs-dismiss="alert"></button></div><?php endforeach; ?>
-<?php else: ?>
-<main class="auth-main">
- <div class="container py-5">
-<?php endif; ?>
+
+<body class="<?= e($bodyClass ?? '') ?> layout-fixed sidebar-expand-lg bg-body-tertiary">
+  <div class="app-wrapper">
+    <!--begin::Header-->
+    <?php include 'navbar.php'; ?>
+    <!--end::Header-->
+    <!--begin::Sidebar-->
+    <?php include 'sidebar.php'; ?>
+    <!--end::Sidebar-->
+
+    <?php if ($user): ?>
+      <!--begin::App Main-->
+      <main class="app-main">
+        <?php foreach ($flashes as [$type, $msg]): ?><div class="alert alert-<?= e($type) ?> alert-dismissible fade show"><?= e($msg) ?><button class="btn-close" data-bs-dismiss="alert"></button></div><?php endforeach; ?>
+        <!--begin::App Content Header-->
+        <div class="app-content-header">
+          <!--begin::Container-->
+          <div class="container-fluid">
+            <!--begin::Row-->
+            <div class="row">
+              <div class="col-sm-6">
+                <h1 class="mb-0 fs-3">Dashboard</h1>
+              </div>
+              <div class="col-sm-6">
+                <nav aria-label="breadcrumb">
+                  <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a href="#">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                  </ol>
+                </nav>
+              </div>
+            </div>
+            <!--end::Row-->
+          </div>
+          <!--end::Container-->
+        </div>
+        <!--begin::App Content-->
+        <div class="app-content">
+          <!--begin::Container-->
+          <div class="container-fluid">
+          <?php else: ?>
+            <main class="auth-main">
+              <div class="container py-5">
+              <?php endif; ?>
