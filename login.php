@@ -11,7 +11,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 $pageTitle='Login'; $bodyClass='auth-page'; include __DIR__.'/includes/header.php';
 ?>
 <div class="auth-card">
- <div class="text-center mb-4"><div class="brand-mark large">S</div><h1 class="h3 mt-3">Welcome to STARE</h1><p class="text-secondary">Sign in to continue</p></div>
+ <div class="text-center mb-4"><div class="brand-mark large">S</div><h1 class="h3 mt-3 text-info">Welcome to STARE</h1><p class="text-secondary">Sign in to continue</p></div>
  <?php if($error): ?><div class="alert alert-danger"><?=e($error)?></div><?php endif; ?>
  <form method="post"><?=csrf_field()?>
   <label class="form-label">Email</label><input class="form-control mb-3" type="email" name="email" required>
