@@ -105,7 +105,7 @@ $flashes = get_flashes();
   <!--end::Third Party Plugin(Bootstrap Icons)-->
 
   <!--begin::Required Plugin(AdminLTE)-->
-  <link href="<?=BASE_URL?>/assets/css/style.css" rel="stylesheet">
+  <link href="<?= BASE_URL ?>/assets/css/style.css" rel="stylesheet">
   <link rel="stylesheet" href="<?= BASE_URL ?>/css/adminlte.css" />
   <!--end::Required Plugin(AdminLTE)-->
 
@@ -136,30 +136,14 @@ $flashes = get_flashes();
     <?php if ($user): ?>
       <!--begin::App Main-->
       <main class="app-main">
-        <?php foreach ($flashes as [$type, $msg]): ?><div class="alert alert-<?= e($type) ?> alert-dismissible fade show"><?= e($msg) ?><button class="btn-close" data-bs-dismiss="alert"></button></div><?php endforeach; ?>
-        <!--begin::App Content Header-->
-        <div class="app-content-header">
-          <!--begin::Container-->
-          <div class="container-fluid">
-            <!--begin::Row-->
-            <div class="row">
-              <div class="col-sm-6">
-                <h1 class="mb-0 fs-3">Dashboard</h1>
-              </div>
-              <div class="col-sm-6">
-                <nav aria-label="breadcrumb">
-                  <ol class="breadcrumb float-sm-end">
-                    <li class="breadcrumb-item"><a href="#">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                  </ol>
-                </nav>
-              </div>
-            </div>
-            <!--end::Row-->
+        <?php foreach ($flashes as [$type, $msg]): ?>
+          <div class="alert alert-<?= e($type) ?> alert-dismissible fade show m-3">
+            <?= e($msg) ?>
+            <button class="btn-close" data-bs-dismiss="alert">
+            </button>
           </div>
-          <!--end::Container-->
-        </div>
-        <!--begin::App Content-->
+        <?php endforeach; ?>
+        
         <div class="app-content">
           <!--begin::Container-->
           <div class="container-fluid">

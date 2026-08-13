@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $pageTitle = $id ? 'Edit Category' : 'Add Category';
 include __DIR__ . '/../../includes/header.php';
 ?>
+
 <div class="mb-4"><span class="eyebrow">CATALOG</span>
     <h1 class="page-title"><?= $id ? 'Edit' : 'Add' ?> Category</h1>
 </div>
@@ -41,5 +42,53 @@ include __DIR__ . '/../../includes/header.php';
         </div>
         <div class="mt-4"><button class="btn btn-stare">Save</button> <a class="btn btn-outline-secondary" href="index.php">Cancel</a></div>
     </form>
+
+<div class="mb-4">
+    <h1 class="page-title mb-0"><?= $id ? 'Edit' : 'Add' ?> Category</h1>
+</div>
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title">Category Details</h3>
+    </div>
+    <div class="card-body">
+        <?php if ($error): ?><div class="alert alert-danger"><?= e($error) ?></div><?php endif; ?>
+        <form method="post">
+            <?= csrf_field() ?>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="categoryName" name="name" placeholder="Category name" value="<?= e($row['name']) ?>" required>
+                        <label for="categoryName">Name</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="categoryImage" name="image" placeholder="Image URL" value="<?= e($row['image']) ?>">
+                        <label for="categoryImage">Image URL</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="form-floating">
+                        <textarea class="form-control" id="categoryDescription" name="description" placeholder="Description" style="height: 6rem"><?= e($row['description']) ?></textarea>
+                        <label for="categoryDescription">Description</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-floating">
+                        <select class="form-select" id="categoryStatus" name="status">
+                            <option value="active" <?= $row['status'] === 'active' ? 'selected' : '' ?>>Active</option>
+                            <option value="inactive" <?= $row['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+                        </select>
+                        <label for="categoryStatus">Status</label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                <a class="btn btn-sm btn-outline-secondary" href="index.php">Cancel</a>
+            </div>
+        </form>
+    </div>
+
 </div>
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
