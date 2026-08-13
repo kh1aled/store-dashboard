@@ -1,9 +1,60 @@
 <?php
-require_once __DIR__.'/../config/database.php';require_once __DIR__.'/../includes/functions.php';require_permission($pdo,'view_dashboard');if(user_role($pdo)!=='client')redirect('/index.php');
-$clientId=client_id_for_user($pdo,(int)current_user($pdo)['id']);$active='dashboard';$pageTitle='My Dashboard';
-$orders=$pdo->prepare("SELECT * FROM orders WHERE client_id=? ORDER BY id DESC LIMIT 5");$orders->execute([$clientId]);$orders=$orders->fetchAll();
-include __DIR__.'/../includes/header.php';?>
-<div class="mb-4"><span class="eyebrow">CLIENT AREA</span><h1 class="page-title">Welcome, <?=e(current_user($pdo)['name'])?></h1><p class="text-secondary">Browse products, manage your cart and track your own orders.</p></div>
-<div class="row g-3 mb-4"><div class="col-md-4"><div class="stat-card"><div class="text-secondary">My Orders</div><div class="stat-value"><?=(int)$pdo->query("SELECT COUNT(*) FROM orders WHERE client_id=".$clientId)->fetchColumn()?></div></div></div><div class="col-md-4"><div class="stat-card"><div class="text-secondary">Cart Items</div><div class="stat-value"><?=cart_count($pdo,$clientId)?></div></div></div><div class="col-md-4"><div class="stat-card"><div class="text-secondary">Account</div><div class="stat-value text-success">Active</div></div></div></div>
-<div class="panel"><div class="panel-head"><h2 class="h5">Recent Orders</h2><a href="<?=BASE_URL?>/client/orders.php">View all</a></div><div class="table-responsive"><table class="table stare-table"><thead><tr><th>Order</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody><?php foreach($orders as $o):?><tr><td>#<?=e($o['order_number'])?></td><td><?=money($o['total_amount'])?></td><td><?=status_badge($o['status'])?></td><td><?=e(date('Y-m-d',strtotime($o['created_at'])))?></td></tr><?php endforeach;?></tbody></table></div></div>
-<?php include __DIR__.'/../includes/footer.php';?>
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_permission($pdo, 'view_dashboard');
+if (user_role($pdo) !== 'client') redirect('/index.php');
+$clientId = client_id_for_user($pdo, (int)current_user($pdo)['id']);
+$active = 'dashboard';
+$pageTitle = 'My Dashboard';
+$orders = $pdo->prepare("SELECT * FROM orders WHERE client_id=? ORDER BY id DESC LIMIT 5");
+$orders->execute([$clientId]);
+$orders = $orders->fetchAll();
+include __DIR__ . '/../includes/header.php'; ?>
+<div class="mb-4"><span class="eyebrow">CLIENT AREA</span>
+    <h1 class="page-title">Welcome, <?= e(current_user($pdo)['name']) ?></h1>
+    <p class="text-secondary">Browse products, manage your cart and track your own orders.</p>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-secondary">My Orders</div>
+            <div class="stat-value"><?= (int)$pdo->query("SELECT COUNT(*) FROM orders WHERE client_id=" . $clientId)->fetchColumn() ?></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-secondary">Cart Items</div>
+            <div class="stat-value"><?= cart_count($pdo, $clientId) ?></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="text-secondary">Account</div>
+            <div class="stat-value text-success">Active</div>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="panel-head">
+        <h2 class="h5">Recent Orders</h2><a href="<?= BASE_URL ?>/client/orders.php">View all</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table stare-table">
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody><?php foreach ($orders as $o): ?><tr>
+                        <td>#<?= e($o['order_number']) ?></td>
+                        <td><?= money($o['total_amount']) ?></td>
+                        <td><?= status_badge($o['status']) ?></td>
+                        <td><?= e(date('Y-m-d', strtotime($o['created_at']))) ?></td>
+                    </tr><?php endforeach; ?></tbody>
+        </table>
+    </div>
+</div>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

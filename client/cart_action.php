@@ -1,9 +1,45 @@
 <?php
-require_once __DIR__.'/../config/database.php';require_once __DIR__.'/../includes/functions.php';require_permission($pdo,'view_cart');if(user_role($pdo)!=='client')redirect('/index.php');verify_csrf();
-$clientId=client_id_for_user($pdo,(int)current_user($pdo)['id']);$cartId=get_or_create_cart($pdo,$clientId);$action=$_POST['action']??'';
-try{
- if($action==='add'){ $pid=(int)$_POST['product_id'];$st=$pdo->prepare("SELECT * FROM products WHERE id=? AND status='active' FOR UPDATE");$pdo->beginTransaction();$st->execute([$pid]);$p=$st->fetch();if(!$p||$p['stock']<1)throw new RuntimeException('Product unavailable.');$st=$pdo->prepare("INSERT INTO cart_items(cart_id,product_id,quantity,unit_price) VALUES(?,?,1,?) ON DUPLICATE KEY UPDATE quantity=LEAST(quantity+1,?)");$st->execute([$cartId,$pid,product_price($p),(int)$p['stock']]);$pdo->commit();flash('success','Product added to cart.');}
- elseif($action==='update'){if(isset($_POST['remove_item'])){$pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$_POST['remove_item'],$cartId]);flash('success','Item removed.');} else foreach(($_POST['qty']??[]) as $itemId=>$qty){$qty=max(0,(int)$qty);$st=$pdo->prepare("SELECT ci.id,p.stock FROM cart_items ci JOIN products p ON p.id=ci.product_id WHERE ci.id=? AND ci.cart_id=?");$st->execute([(int)$itemId,$cartId]);$item=$st->fetch();if($item){if($qty===0)$pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$itemId,$cartId]);else $pdo->prepare("UPDATE cart_items SET quantity=LEAST(?,?) WHERE id=? AND cart_id=?")->execute([$qty,(int)$item['stock'],(int)$itemId,$cartId]);}}flash('success','Cart updated.');}
- elseif($action==='remove'){$pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$_POST['item_id'],$cartId]);flash('success','Item removed.');}
-} catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();flash('danger',$e->getMessage()?:'Cart operation failed.');}
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_permission($pdo, 'view_cart');
+if (user_role($pdo) !== 'client') redirect('/index.php');
+verify_csrf();
+$clientId = client_id_for_user($pdo, (int)current_user($pdo)['id']);
+$cartId = get_or_create_cart($pdo, $clientId);
+$action = $_POST['action'] ?? '';
+try {
+    if ($action === 'add') {
+        $pid = (int)$_POST['product_id'];
+        $st = $pdo->prepare("SELECT * FROM products WHERE id=? AND status='active' FOR UPDATE");
+        $pdo->beginTransaction();
+        $st->execute([$pid]);
+        $p = $st->fetch();
+        if (!$p || $p['stock'] < 1) throw new RuntimeException('Product unavailable.');
+        $st = $pdo->prepare("INSERT INTO cart_items(cart_id,product_id,quantity,unit_price) VALUES(?,?,1,?) ON DUPLICATE KEY UPDATE quantity=LEAST(quantity+1,?)");
+        $st->execute([$cartId, $pid, product_price($p), (int)$p['stock']]);
+        $pdo->commit();
+        flash('success', 'Product added to cart.');
+    } elseif ($action === 'update') {
+        if (isset($_POST['remove_item'])) {
+            $pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$_POST['remove_item'], $cartId]);
+            flash('success', 'Item removed.');
+        } else foreach (($_POST['qty'] ?? []) as $itemId => $qty) {
+            $qty = max(0, (int)$qty);
+            $st = $pdo->prepare("SELECT ci.id,p.stock FROM cart_items ci JOIN products p ON p.id=ci.product_id WHERE ci.id=? AND ci.cart_id=?");
+            $st->execute([(int)$itemId, $cartId]);
+            $item = $st->fetch();
+            if ($item) {
+                if ($qty === 0) $pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$itemId, $cartId]);
+                else $pdo->prepare("UPDATE cart_items SET quantity=LEAST(?,?) WHERE id=? AND cart_id=?")->execute([$qty, (int)$item['stock'], (int)$itemId, $cartId]);
+            }
+        }
+        flash('success', 'Cart updated.');
+    } elseif ($action === 'remove') {
+        $pdo->prepare("DELETE FROM cart_items WHERE id=? AND cart_id=?")->execute([(int)$_POST['item_id'], $cartId]);
+        flash('success', 'Item removed.');
+    }
+} catch (Throwable $e) {
+    if ($pdo->inTransaction()) $pdo->rollBack();
+    flash('danger', $e->getMessage() ?: 'Cart operation failed.');
+}
 safe_back('/client/cart.php');
