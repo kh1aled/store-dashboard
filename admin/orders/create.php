@@ -60,46 +60,88 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 include __DIR__.'/../../includes/header.php';
 ?>
 <div class="d-flex justify-content-between align-items-center mb-4">
- <div><span class="eyebrow">OPERATIONS</span><h1 class="page-title">Create Order</h1><p class="text-secondary mb-0">Create an order for a client and reserve stock immediately.</p></div>
- <a class="btn btn-outline-secondary" href="index.php">Back to Orders</a>
+    <div>
+        <h1 class="page-title mb-0">Create Order</h1>
+        <p class="text-secondary mb-0">Create an order for a client and reserve stock immediately.</p>
+    </div>
+    <a class="btn btn-sm btn-outline-secondary" href="index.php">Back to Orders</a>
 </div>
-<?php if($error): ?><div class="alert alert-danger"><?=e($error)?></div><?php endif; ?>
+<?php if ($error): ?><div class="alert alert-danger"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
-<?=csrf_field()?>
-<div class="row g-4">
- <div class="col-lg-5">
-  <div class="panel">
-   <h2 class="h5 mb-3">Client</h2>
-   <label class="form-label">Client</label>
-   <select class="form-select mb-3" name="client_id" id="client_id" required>
-    <option value="">Select client</option>
-    <?php foreach($clients as $c): ?><option value="<?=$c['id']?>" data-address="<?=e($c['address']??'')?>" <?=((int)($_POST['client_id']??0)==$c['id'])?'selected':''?>><?=e($c['name'])?> — <?=e($c['email'])?></option><?php endforeach; ?>
-   </select>
-   <label class="form-label">Shipping Address</label>
-   <textarea class="form-control" name="shipping_address" id="shipping_address" rows="4" required><?=e($_POST['shipping_address']??'')?></textarea>
-  </div>
- </div>
- <div class="col-lg-7">
-  <div class="panel">
-   <div class="panel-head"><h2 class="h5 mb-0">Products</h2><span class="text-secondary small">Available stock</span></div>
-   <div class="table-responsive">
-    <table class="table stare-table align-middle">
-     <thead><tr><th>Product</th><th>Price</th><th>Stock</th><th width="120">Qty</th></tr></thead>
-     <tbody>
-     <?php foreach($products as $p): $old=(int)($_POST['items'][$p['id']]??0); ?>
-      <tr>
-       <td><strong><?=e($p['name'])?></strong><div class="small text-secondary"><?=e($p['sku'])?></div></td>
-       <td><?=money(product_price($p))?></td><td><?=$p['stock']?></td>
-       <td><input class="form-control" type="number" name="items[<?=$p['id']?>]" min="0" max="<?=$p['stock']?>" value="<?=$old?>"></td>
-      </tr>
-     <?php endforeach; ?>
-     </tbody>
-    </table>
-   </div>
-   <button class="btn btn-stare mt-3"><i class="bi bi-check2-circle"></i> Create Order</button>
-  </div>
- </div>
-</div>
+    <?= csrf_field() ?>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Client</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <select class="form-select" id="client_id" name="client_id" required>
+                                    <option value="">Select client</option>
+                                    <?php foreach ($clients as $c): ?><option value="<?= $c['id'] ?>" data-address="<?= e($c['address'] ?? '') ?>" <?= ((int)($_POST['client_id'] ?? 0) == $c['id']) ? 'selected' : '' ?>><?= e($c['name']) ?> — <?= e($c['email']) ?></option><?php endforeach; ?>
+                                </select>
+                                <label for="client_id">Client</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <textarea class="form-control" id="shipping_address" name="shipping_address" placeholder="Shipping address" style="height: 8rem" required><?= e($_POST['shipping_address'] ?? '') ?></textarea>
+                                <label for="shipping_address">Shipping Address</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-12 col-md-6">
+                            <h3 class="card-title">Products</h3>
+                        </div>
+                        <div class="col-12 col-md-6 text-md-end">
+                            <span class="text-body-secondary small">Available stock</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle m-0">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th width="120">Qty</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($products as $p): $old = (int)($_POST['items'][$p['id']] ?? 0); ?><tr>
+                                        <td>
+                                            <span class="fw-medium"><?= e($p['name']) ?></span>
+                                            <div class="small text-body-secondary"><?= e($p['sku']) ?></div>
+                                        </td>
+                                        <td><?= money(product_price($p)) ?></td>
+                                        <td><?= $p['stock'] ?><?php if ($p['stock'] <= 5): ?> <span class="badge text-bg-warning">Low</span><?php endif; ?></td>
+                                        <td><input class="form-control form-control-sm" type="number" name="items[<?= $p['id'] ?>]" min="0" max="<?= $p['stock'] ?>" value="<?= $old ?>"></td>
+                                    </tr><?php endforeach;
+                                    if (!$products): ?><tr>
+                                        <td colspan="4" class="text-center py-5 text-body-secondary">No products available.</td>
+                                    </tr><?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check2-circle"></i> Create Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </form>
 <script>
 document.getElementById('client_id')?.addEventListener('change', function(){
