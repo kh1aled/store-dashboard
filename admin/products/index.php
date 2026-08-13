@@ -33,7 +33,7 @@ include __DIR__ . '/../../includes/header.php';
         <table class="table stare-table align-middle">
             <thead>
                 <tr>
-                    <th>Product</th>
+                    <th>Products</th>
                     <th>SKU</th>
                     <th>Category</th>
                     <th>Brand</th>
